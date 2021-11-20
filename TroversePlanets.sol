@@ -246,20 +246,20 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     * @dev Calculate auction price with a timestamp
     * @param time The target timestamp
     */
-	function getPriceOnTime(uint time) public view returns(uint) {
-		if(time < auctionStartTime) {
-			return SALE_INITIAL_PRICE;
-		}
+    function getPriceOnTime(uint time) public view returns(uint) {
+        if(time < auctionStartTime) {
+            return SALE_INITIAL_PRICE;
+        }
 
-		uint maxRange = (SALE_INITIAL_PRICE - SALE_ENDING_PRICE) / SALE_PRICE_DROP;
-		uint currentRange = (time - auctionStartTime) / SALE_PRICE_DROP_TIME;
+        uint maxRange = (SALE_INITIAL_PRICE - SALE_ENDING_PRICE) / SALE_PRICE_DROP;
+        uint currentRange = (time - auctionStartTime) / SALE_PRICE_DROP_TIME;
 
-		if(currentRange >= maxRange) {
-			return SALE_ENDING_PRICE;
-		}
-        
-		return SALE_INITIAL_PRICE - (currentRange * SALE_PRICE_DROP);
-	}
+        if(currentRange >= maxRange) {
+            return SALE_ENDING_PRICE;
+        }
+
+        return SALE_INITIAL_PRICE - (currentRange * SALE_PRICE_DROP);
+    }
 
     /**
     * @dev Get the auction refund price at this moment

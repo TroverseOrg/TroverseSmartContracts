@@ -68,7 +68,7 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     * @dev Check if the public sale auction is sold-out
     */
     function isAuctionSoldOut() private view returns(bool) {
-        return getRemainingPlanets() <= 0;
+        return getRemainingPlanets() == 0;
     }
 
     /**
@@ -124,7 +124,7 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
         require(isPreSaleOpen(), "Pre sale is currently closed");
         require(!isAuctionSoldOut(), "Sold-out!");
         require(_preSaleList.contains(msg.sender), "You are not on the whitelist");
-        require(_preSaleCounts[msg.sender] - count >= 0, "Exceeded allowed amount");
+        require(count <= _preSaleCounts[msg.sender], "Exceeded allowed amount");
 
         uint requiredFunds = PRE_SALE_PRICE * count;
         require(msg.value >= requiredFunds, "Insufficient ether");

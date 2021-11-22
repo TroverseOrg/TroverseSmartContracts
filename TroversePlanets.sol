@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 
-
 contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     using Strings for uint;
     using EnumerableSet for EnumerableSet.AddressSet;

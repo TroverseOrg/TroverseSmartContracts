@@ -38,10 +38,10 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     uint private _reservedMints = 0;
 
     uint public constant SALE_INITIAL_PRICE = 2 ether;
-    uint public constant SALE_ENDING_PRICE = 0.2 ether;
+    uint public constant SALE_ENDING_PRICE = 0.1 ether;
     uint public constant SALE_DROP_PRICE = 0.1 ether;
     uint public constant SALE_DROP_PRICE_TIME = 5 minutes;
-    uint public constant PRE_SALE_PRICE = 0.2 ether;
+    uint public constant PRE_SALE_PRICE = 0.1 ether;
 
     uint private _lastAuctionSalePrice = SALE_INITIAL_PRICE;
     uint public auctionStartTime = 0;

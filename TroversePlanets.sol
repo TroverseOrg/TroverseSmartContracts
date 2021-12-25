@@ -17,10 +17,10 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     using Strings for uint;
     using EnumerableSet for EnumerableSet.AddressSet;
     
-    
-	mapping (uint => string) private _planetName;
-	mapping (string => bool) private _nameReserved;
-	mapping (uint => string) private _planetDescription;
+
+    mapping (uint => string) private _planetName;
+    mapping (string => bool) private _nameReserved;
+    mapping (uint => string) private _planetDescription;
     
     IYieldToken public yieldToken;
     
@@ -79,16 +79,16 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     * @dev Update the price for changing the planet's name
     * @param price New name change price
     */
-	function updateNameChangePrice(uint price) external onlyOwner {
-		nameChangePrice = price;
-	}
+    function updateNameChangePrice(uint price) external onlyOwner {
+        nameChangePrice = price;
+    }
 
     /**
     * @dev Update the price for changing the planet's description
     * @param price New description change price
     */
-	function updateDescriptionChangePrice(uint price) external onlyOwner {
-		descriptionChangePrice = price;
+    function updateDescriptionChangePrice(uint price) external onlyOwner {
+        descriptionChangePrice = price;
     }
 
     /**
@@ -97,20 +97,20 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
     * @param newName The new name of the planet
     */
     function changeName(uint planetId, string memory newName) external {
-		require(_msgSender() == ownerOf(planetId), "ERC721: caller is not the owner");
-		require(validateName(newName) == true, "Not a valid new name");
-		require(sha256(bytes(newName)) != sha256(bytes(_planetName[planetId])), "New name is same as the current one");
-		require(isNameReserved(newName) == false, "Name already reserved");
+        require(_msgSender() == ownerOf(planetId), "ERC721: caller is not the owner");
+        require(validateName(newName) == true, "Not a valid new name");
+        require(sha256(bytes(newName)) != sha256(bytes(_planetName[planetId])), "New name is same as the current one");
+        require(isNameReserved(newName) == false, "Name already reserved");
 
-		if (bytes(_planetName[planetId]).length > 0) {
-			toggleReserveName(_planetName[planetId], false);
-		}
-		toggleReserveName(newName, true);
+        if (bytes(_planetName[planetId]).length > 0) {
+            toggleReserveName(_planetName[planetId], false);
+        }
+        toggleReserveName(newName, true);
 
         yieldToken.burn(msg.sender, nameChangePrice);
-		_planetName[planetId] = newName;
+        _planetName[planetId] = newName;
 
-		emit NameChanged(planetId, newName);
+        emit NameChanged(planetId, newName);
     }
 
     /**
@@ -127,87 +127,86 @@ contract TroversePlanets is ERC721Enumerable, Ownable, ReentrancyGuard {
         emit DescriptionChanged(planetId, newDescription);
     }
 
-	/**
-	 * @dev Change a name reserve state
-	 * @param name Target reserve name
-	 * @param isReserve The new reserve state
-	 */
-	function toggleReserveName(string memory name, bool isReserve) internal {
-		_nameReserved[toLower(name)] = isReserve;
-	}
+    /**
+    * @dev Change a name reserve state
+    * @param name Target reserve name
+    * @param isReserve The new reserve state
+    */
+    function toggleReserveName(string memory name, bool isReserve) internal {
+        _nameReserved[toLower(name)] = isReserve;
+    }
 
-	/**
-	 * @dev Returns name of the planet at index
-     * @param index Target planet index
-	 */
-	function planetNameByIndex(uint index) public view returns (string memory) {
-		return _planetName[index];
-	}
+    /**
+    * @dev Returns name of the planet at index
+    * @param index Target planet index
+    */
+    function planetNameByIndex(uint index) public view returns (string memory) {
+        return _planetName[index];
+    }
 
-	/**
-	 * @dev Returns description of the planet at index
-     * @param index Target planet index
-	 */
-	function planetDescriptionByIndex(uint index) public view returns (string memory) {
-		return _planetDescription[index];
-	}
+    /**
+    * @dev Returns description of the planet at index
+    * @param index Target planet index
+    */
+    function planetDescriptionByIndex(uint index) public view returns (string memory) {
+        return _planetDescription[index];
+    }
 
-	/**
-	 * @dev Returns if the name has been reserved.
-	 */
-	function isNameReserved(string memory nameString) public view returns (bool) {
-		return _nameReserved[toLower(nameString)];
-	}
-    
+    /**
+    * @dev Returns if the name has been reserved.
+    */
+    function isNameReserved(string memory nameString) public view returns (bool) {
+        return _nameReserved[toLower(nameString)];
+    }
+
     /**
     * @dev Validating a name string
     * @param newName Target name to be validated
     */
-	function validateName(string memory newName) public pure returns (bool) {
-		bytes memory b = bytes(newName);
-		if (b.length < 1) return false;
-		if (b.length > 25) return false; // Cannot be longer than 25 characters
-		if (b[0] == 0x20) return false; // Leading space
-		if (b[b.length - 1] == 0x20) return false; // Trailing space
+    function validateName(string memory newName) public pure returns (bool) {
+        bytes memory b = bytes(newName);
+        if (b.length < 1) return false;
+        if (b.length > 25) return false; // Cannot be longer than 25 characters
+        if (b[0] == 0x20) return false; // Leading space
+        if (b[b.length - 1] == 0x20) return false; // Trailing space
 
-		bytes1 lastChar = b[0];
+        bytes1 lastChar = b[0];
 
-		for(uint i; i < b.length; i++){
-			bytes1 char = b[i];
+        for(uint i; i < b.length; i++){
+            bytes1 char = b[i];
 
-			if (char == 0x20 && lastChar == 0x20) return false; // Cannot contain continous spaces
+            if (char == 0x20 && lastChar == 0x20) return false; // Cannot contain continous spaces
 
-			if(
-				!(char >= 0x30 && char <= 0x39) && //9-0
-				!(char >= 0x41 && char <= 0x5A) && //A-Z
-				!(char >= 0x61 && char <= 0x7A) && //a-z
-				!(char == 0x20) //space
-			)
-				return false;
+            if(
+                !(char >= 0x30 && char <= 0x39) && //9-0
+                !(char >= 0x41 && char <= 0x5A) && //A-Z
+                !(char >= 0x61 && char <= 0x7A) && //a-z
+                !(char == 0x20) //space
+            )
+            return false;
 
-			lastChar = char;
-		}
+            lastChar = char;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	 /**
-	 * @dev Converts a string to lowercase
-	 * @param str Target string to be converted to lowercase
-	 */
-	function toLower(string memory str) public pure returns (string memory) {
-		bytes memory bStr = bytes(str);
-		bytes memory bLower = new bytes(bStr.length);
-		for (uint i = 0; i < bStr.length; i++) {
-			// Uppercase character
-			if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) {
-				bLower[i] = bytes1(uint8(bStr[i]) + 32);
-			} else {
-				bLower[i] = bStr[i];
-			}
-		}
-		return string(bLower);
-	}
+    /**
+    * @dev Converts a string to lowercase
+    * @param str Target string to be converted to lowercase
+    */
+    function toLower(string memory str) public pure returns (string memory) {
+        bytes memory bStr = bytes(str);
+        bytes memory bLower = new bytes(bStr.length);
+        for (uint i = 0; i < bStr.length; i++) {
+            if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) {
+                bLower[i] = bytes1(uint8(bStr[i]) + 32);
+            } else {
+                bLower[i] = bStr[i];
+            }
+        }
+        return string(bLower);
+    }
 
     /**
     * @dev Get number of reserved NFTs which will be used for gifts or giveaways

@@ -94,7 +94,10 @@ contract TroversePlanets is Ownable, ERC721A {
         }
         toggleReserveName(newName, true);
 
-        yieldToken.burn(msg.sender, nameChangePrice);
+        if (nameChangePrice > 0) {
+            yieldToken.burn(msg.sender, nameChangePrice);
+        }
+
         _planetName[planetId] = newName;
 
         emit NameChanged(planetId, newName);
@@ -114,7 +117,10 @@ contract TroversePlanets is Ownable, ERC721A {
     function changeDescription(uint256 planetId, string memory newDescription) external {
         require(_msgSender() == ownerOf(planetId), "Caller is not the owner");
 
-        yieldToken.burn(msg.sender, descriptionChangePrice);
+        if (descriptionChangePrice > 0) {
+            yieldToken.burn(msg.sender, descriptionChangePrice);
+        }
+        
         _planetDescription[planetId] = newDescription;
 
         emit DescriptionChanged(planetId, newDescription);
@@ -243,7 +249,7 @@ contract TroversePlanets is Ownable, ERC721A {
     /**
      * @dev Get ownership info of a planet
      */
-    function getOwnershipData(uint256 tokenId) external view returns (TokenOwnership memory) {
+    function getOwnershipData(uint256 tokenId) external view returns (address) {
         return ownershipOf(tokenId);
     }
     

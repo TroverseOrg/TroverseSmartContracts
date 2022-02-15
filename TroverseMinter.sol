@@ -197,7 +197,7 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
     }
 
     /**
-    * @dev Mint the Planets for the team, advisors, marketing and giveaways
+    * @dev Mint the reserved planets, which will be used for promotions, marketing, strategic partnerships, giveaways, airdrops and also for Troverse team allocation
     */
     function reserveMint(uint256 quantity) external onlyOwner {
         require(totalSupply() + quantity <= RESERVED_PLANETS, "Too many already minted before dev mint");
@@ -284,19 +284,17 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
             toSendCredits = remaininCredits - lastAuctionSalePrice * remaininCreditCount;
             
             delete credits[toSendWallet];
-
             _creditOwners.remove(toSendWallet);
 
             if (toSendCredits > 0) {
                 require(payable(toSendWallet).send(toSendCredits));
+                emit CreditRefunded(toSendWallet, toSendCredits);
+
                 _totalCredits -= toSendCredits;
                 _totalCreditCount -= remaininCreditCount;
-                j++;
             }
+            j++;
         }
-
-        _totalCredits = 0;
-        _totalCreditCount = 0;
     }
     
     /**

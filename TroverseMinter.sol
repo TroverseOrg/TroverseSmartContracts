@@ -40,9 +40,10 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
 
     uint256 public lastAuctionSalePrice = AUCTION_START_PRICE;
     mapping(address => uint256) public credits;
+    mapping(address => uint256) public creditCount;
     EnumerableSet.AddressSet private _creditOwners;
-    uint256 private _totalCredits = 0;
-    uint256 private _totalCreditCount = 0;
+    uint256 private _totalCredits;
+    uint256 private _totalCreditCount;
 
     event CreditRefunded(address indexed owner, uint256 value);
     
@@ -79,6 +80,8 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
             _creditOwners.add(msg.sender);
 
             credits[msg.sender] += totalCost;
+            creditCount[msg.sender] += quantity;
+
             _totalCredits += totalCost;
             _totalCreditCount += quantity;
         }
@@ -216,7 +219,7 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
     */
     function getRemainingCredits(address owner) external view returns(uint256) {
         if (credits[owner] > 0) {
-            return credits[owner] - lastAuctionSalePrice * numberMinted(owner);
+            return credits[owner] - lastAuctionSalePrice * creditCount[owner];
         }
         return 0;
     }
@@ -246,18 +249,19 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
         require(isAuctionPriceFinalized(), "Auction price is not finalized yet!");
         require(_creditOwners.contains(msg.sender), "Not a credit owner!");
         
-        uint256 remaininCredits = credits[msg.sender];
-        uint256 remaininCreditCount = numberMinted(msg.sender);
-        uint256 toSendCredits = remaininCredits - lastAuctionSalePrice * remaininCreditCount;
+        uint256 remainingCredits = credits[msg.sender];
+        uint256 remainingCreditCount = creditCount[msg.sender];
+        uint256 toSendCredits = remainingCredits - lastAuctionSalePrice * remainingCreditCount;
 
         require(toSendCredits > 0, "No credits to refund!");
 
         delete credits[msg.sender];
+        delete creditCount[msg.sender];
 
         _creditOwners.remove(msg.sender);
 
-        _totalCredits -= remaininCredits;
-        _totalCreditCount -= remaininCreditCount;
+        _totalCredits -= remainingCredits;
+        _totalCreditCount -= remainingCreditCount;
 
         emit CreditRefunded(msg.sender, toSendCredits);
 
@@ -272,18 +276,19 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
         
         address toSendWallet;
         uint256 toSendCredits;
-        uint256 remaininCredits;
-        uint256 remaininCreditCount;
+        uint256 remainingCredits;
+        uint256 remainingCreditCount;
         
         uint256 j = 0;
         while (_creditOwners.length() > 0 && j < count) {
             toSendWallet = _creditOwners.at(0);
             
-            remaininCredits = credits[toSendWallet];
-            remaininCreditCount = numberMinted(toSendWallet);
-            toSendCredits = remaininCredits - lastAuctionSalePrice * remaininCreditCount;
+            remainingCredits = credits[toSendWallet];
+            remainingCreditCount = creditCount[toSendWallet];
+            toSendCredits = remainingCredits - lastAuctionSalePrice * remainingCreditCount;
             
             delete credits[toSendWallet];
+            delete creditCount[toSendWallet];
             _creditOwners.remove(toSendWallet);
 
             if (toSendCredits > 0) {
@@ -291,7 +296,7 @@ contract TroverseMinter is Ownable, ReentrancyGuard {
                 emit CreditRefunded(toSendWallet, toSendCredits);
 
                 _totalCredits -= toSendCredits;
-                _totalCreditCount -= remaininCreditCount;
+                _totalCreditCount -= remainingCreditCount;
             }
             j++;
         }
